@@ -1,0 +1,82 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=JetBrains+Mono:wght@400;700&display=swap");
+
+* {
+  font-family: "Space Grotesk", sans-serif;
+  scroll-behavior: smooth;
+}
+.font-tech {
+  font-family: "JetBrains Mono", monospace;
+}
+
+.transition-all {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.canvas-container {
+  height: 500px;
+  width: 100%;
+  background: #111;
+}
+@keyframes scanline {
+  0% {
+    bottom: 100%;
+  }
+  100% {
+    bottom: 0%;
+  }
+}
+
+.canvas-container::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 50%,
+    rgba(249, 115, 22, 0.02) 50%
+  );
+  background-size: 100% 4px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/*Github Dark Theme*/
+:root {
+  --theme-bg: #0d1117;
+  --theme-bg-alt: #161b22;
+  --theme-text: #8b949e;
+  --theme-heading: #f0f6fc;
+  --theme-border: #30363d;
+  --grid-color: #21262d;
+}
+
+.theme-dark {
+  --theme-bg: #020617;
+  --theme-bg-alt: #030816;
+  --theme-text: #94a3b8;
+  --theme-heading: #ffffff;
+  --theme-border: #1e293b;
+  --grid-color: #1e293b;
+}
+
+.bg-theme-bg {
+  background-color: var(--theme-bg);
+}
+.bg-theme-bg-alt {
+  background-color: var(--theme-bg-alt);
+}
+.text-theme-text {
+  color: var(--theme-text);
+}
+.text-theme-heading {
+  color: var(--theme-heading);
+}
+.border-theme-border {
+  border-color: var(--theme-border);
+}
+.bg-theme-border {
+  background-color: var(--theme-border);
+}
+.divide-theme-border > * + * {
+  border-color: var(--theme-border);
+}
