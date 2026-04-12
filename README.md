@@ -142,6 +142,26 @@ The software architecture currently described for the tuning engine includes:
 
 These endpoints represent the offline and adaptive tuning phases of the project.
 
+### Tuning Progress Graphs
+
+The following graphs summarize the tuning behavior shared for this project. These repository assets were recreated from the graph screenshots provided during documentation so they can be embedded directly in the public README.
+
+#### Kp Over Iterations
+
+![Kp progress graph](docs/graphs/kp-progress.svg)
+
+#### Steady State Over Iterations
+
+![Steady state graph](docs/graphs/steady-state.svg)
+
+#### Overshoot Trend During Tuning
+
+![Overshoot trend graph](docs/graphs/overshoot-trend.svg)
+
+#### PID Gains Over Iterations
+
+![PID gains graph](docs/graphs/pid-gains.svg)
+
 ## 11. Pic of the Project / Prototype
 
 ### Assembled Prototype
