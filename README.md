@@ -44,6 +44,87 @@ At a high level, the system works like this:
 
 This architecture makes the prototype useful as a hardware validation platform for closed-loop control experiments, especially where rapid PID iteration is the main goal.
 
+## Firmware and Tuning Software
+
+The current software stack is best described as a hybrid of embedded control firmware on the robot and an external AI-assisted tuning service.
+
+### Embedded Firmware Role
+
+On the robot itself, the ESP32-S3 is responsible for the real-time control side of the system:
+
+- reading motion data from the MPU-6050,
+- running the balancing or motion-control loop,
+- driving the motor driver with updated actuator commands,
+- and presenting status or tuning feedback on the OLED.
+
+In other words, the ESP32-S3 executes the live control loop, while the tuning logic determines which PID gains should be used.
+
+### PID Tuning Objective
+
+The firmware and surrounding software are designed to automatically determine effective PID gains (`Kp`, `Ki`, `Kd`) for real control systems, reducing manual trial-and-error.
+
+The tuning process is organized into two phases:
+
+1. `Offline tuning`:
+   an initial tuning session that uses exploratory runs and recorded step-response results to find a strong baseline.
+2. `Online tuning`:
+   an adaptive phase that adjusts gains after the system is already running on real hardware.
+
+The target system for this workflow is the self-balancing robot form factor shown in this project, where the key feedback variables are tilt angle, angular velocity, and wheel behavior, and the output is motor drive command or PWM.
+
+### Ideal Tuning Flow
+
+The firmware description provided for this project outlines the following tuning loop:
+
+1. Run a P-only exploratory response on the real system.
+2. Measure response characteristics such as settling time, overshoot, steady-state error, and stability.
+3. Use those results to identify a matching simulated system or control profile.
+4. Refine candidate PID values based on that matched behavior.
+5. Deploy the suggested gains on hardware.
+6. Feed the measured hardware result back into the system and repeat.
+
+This gives the project a closed tuning loop rather than a one-time static calibration workflow.
+
+### Approach Evolution
+
+The project initially explored a reinforcement learning approach based on TD3 for automatic PID tuning across simulated plants. That route was later abandoned because the training setup did not deliver reliable real-world performance.
+
+The current direction uses a cloud-hosted LLM as the tuning engine. In this design:
+
+- a FastAPI service manages tuning-session state,
+- the model receives step-response metrics from real tests,
+- the model proposes updated PID gains,
+- and the history of tested gains and measured outcomes is stored between iterations.
+
+This means the robot firmware focuses on sensing, actuation, and applying gains, while the heavier tuning logic lives in the external software layer.
+
+### Tuning Service Interface
+
+According to the current firmware brief, the external tuning service exposes these endpoints:
+
+| Endpoint | Purpose |
+| --- | --- |
+| `/init_session` | Start a tuning session with the system description |
+| `/answer_questions` | Respond to clarifying questions from the tuning model |
+| `/send_results` | Submit hardware results and receive the next PID set |
+| `/accept` | Accept the current gains as the offline baseline |
+| `/start_adaptive` | Begin the online adaptive tuning phase |
+| `/breach` | Report a disturbance event and receive updated gains |
+
+### Current Software Status
+
+Based on the supplied firmware description, the current software state is:
+
+| Item | Status |
+| --- | --- |
+| TD3 reinforcement learning tuner | Abandoned after insufficient performance |
+| LLM-based offline tuner | Implemented |
+| LLM-based online adaptive tuner | Implemented |
+| Hardware integration with the self-balancing robot | In progress |
+| Browser-based simulation visualizer | Built and tested |
+
+Because the repository does not yet include the actual firmware source files or backend implementation, this section documents the current architecture and intended software behavior rather than line-by-line code.
+
 ## PCB and Module Mapping
 
 The custom PCB file confirms these main modules:
@@ -134,11 +215,11 @@ The workspace already contains the major hardware artifacts for this prototype:
 
 To make this project fully reproducible, the next documentation improvements should be:
 
-1. Add the actual firmware source and PID loop description.
+1. Add the actual firmware source files and controller implementation details.
 2. Complete the KiCad schematic so wiring is captured formally.
 3. Add a wiring table with controller pins, sensor pins, and motor driver connections.
 4. Add operating voltage details for each module.
-5. Add setup instructions for calibration, PID tuning procedure, and safety limits.
+5. Add setup instructions for calibration, cloud tuning setup, PID tuning procedure, and safety limits.
 6. Add measured results such as settling time, overshoot, or stability behavior.
 
 ## Photo Gallery
@@ -191,4 +272,4 @@ To make this project fully reproducible, the next documentation improvements sho
 
 ## One-Paragraph Project Summary
 
-E-01 Drive is a compact embedded hardware platform designed to make PID tuning easier in real-world systems. The prototype integrates an ESP32-S3 controller, MPU-6050 IMU, motor driver, OLED display, power stage, and dual-motor chassis into a portable closed-loop testbed. It is well suited for demonstrating balancing, stabilization, and motion-control concepts while giving users a faster and more intuitive way to experiment with controller tuning on real hardware.
+E-01 Drive is a compact embedded hardware platform designed to make PID tuning easier in real-world systems. The prototype integrates an ESP32-S3 controller, MPU-6050 IMU, motor driver, OLED display, power stage, and dual-motor chassis into a portable closed-loop testbed, while a cloud-assisted tuning service proposes and adapts PID gains from measured hardware responses. It is well suited for demonstrating balancing, stabilization, and motion-control concepts while giving users a faster and more intuitive way to experiment with controller tuning on real hardware.
