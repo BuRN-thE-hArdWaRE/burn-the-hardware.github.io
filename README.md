@@ -158,9 +158,9 @@ These endpoints represent the offline and adaptive tuning phases of the project.
 
 ## 12. Demo Video
 
-Demo video link: `To be added`
+Software demo video file available locally: `2026-04-12 14-31-13.mkv`
 
-If you already have a Google Drive link, YouTube link, or any public video URL, this section should be updated immediately before final submission.
+Important note: the provided video file is approximately 177 MB, which exceeds GitHub's normal 100 MB file-size limit for repository commits. To complete the final submission cleanly, this video should be uploaded to a public hosting platform such as YouTube or Google Drive, and that public link should be placed here before judging.
 
 ## 13. Public GitHub Repo Deliverables
 
