@@ -1,275 +1,238 @@
 # E-01 Drive
 
-E-01 Drive is a hardware platform built to make PID tuning easier, faster, and more intuitive. The current prototype uses a custom carrier PCB, an ESP32-S3 controller, an MPU-6050 IMU, a motor driver, and a compact two-wheel robot platform to test and demonstrate closed-loop control behavior in real hardware.
+This repository contains the documentation and design package for `E-01 Drive`, a hardware platform built to make PID tuning easier on real systems. The current prototype is a compact self-balancing robot style control platform built around an ESP32-S3, MPU-6050, motor driver, OLED, battery power stage, custom PCB, and mechanical chassis.
 
-This document is based on three sources available in this workspace:
+## 1. Title of the Project
 
-1. The project abstract titled `EdgeFeedControl: Edge AI-Driven PID Control Platform`.
-2. The physical build photos provided for this project.
-3. The hardware files in this folder, especially the KiCad PCB layout and manufacturing outputs.
+`E-01 Drive: AI-Assisted PID Tuning Platform for a Self-Balancing Robot`
 
-Because the schematic file is currently empty, some integration details below are reconstructed from the PCB layout and photos rather than from a finished circuit schematic.
+## 2. Problem Statement
 
-## Problem Statement
+PID controllers are widely used in robotics and embedded systems, but tuning them on real hardware is still difficult. In most student and prototype projects, tuning is done by manual trial-and-error. This wastes time, increases instability during testing, and makes it hard to reach a reliable operating point quickly.
 
-PID tuning is powerful but frustrating in practice. For many student, robotics, and embedded control projects, tuning a system still means repeated trial and error, unstable behavior, and slow iteration on real hardware.
+For a self-balancing robot, the problem becomes even harder because small changes in gains can produce oscillation, overshoot, or immediate failure. A practical system is needed that can reduce the effort of selecting good PID gains while still working on real hardware.
 
-E-01 Drive is intended to reduce that friction by providing a compact physical test platform where controller parameters can be adjusted, observed, and validated quickly. In the current form factor, it appears to target a two-wheel balancing or motion-control use case where stability and response quality matter directly.
+## 3. Objective
 
-## Current Hardware Application
+The objective of E-01 Drive is to simplify and accelerate PID tuning by combining:
 
-From the uploaded photos and the project abstract structure, this build is best documented as a compact dual-motor control platform for experimenting with real-time PID-based stabilization and motion control.
+- a real embedded hardware platform,
+- live sensing and motor actuation,
+- a structured tuning workflow,
+- and an AI-assisted tuning engine that can suggest updated gains from measured hardware responses.
 
-The assembled system includes:
+The project aims to reduce manual tuning effort while improving repeatability, speed of iteration, and clarity during testing.
 
-- A custom carrier PCB for integrating the control electronics.
-- An ESP32-S3 development board as the main controller.
-- An MPU-6050 IMU for motion and orientation sensing.
-- A dual motor driver board for driving left and right DC gear motors.
-- A small I2C OLED for local status display.
-- A DC-DC power module for voltage conditioning.
-- A Li-ion/LiPo battery as the portable power source.
-- A toggle switch for power control.
-- A 3D-printed or fabricated central body/chassis with two side-mounted gear motors and wheels.
+## 4. Existing Work
 
-## System Overview
+The project builds on the following common approaches already used in control engineering and robotics:
 
-At a high level, the system works like this:
+- Manual PID tuning by observing overshoot, settling time, and steady-state error.
+- Classical heuristics such as Ziegler-Nichols style gain estimation.
+- Simulation-first controller development before real hardware deployment.
+- Adaptive and learning-based tuning methods explored in academic and industrial control systems.
+- Reinforcement learning approaches for automatic controller optimization.
 
-1. The battery powers the platform through the toggle switch and DC-DC regulation stage.
-2. The ESP32-S3 reads motion data from the MPU-6050 over an I2C-style sensor connection.
-3. Control logic computes corrective output based on the selected PID parameters.
-4. The motor driver converts those commands into power for the left and right motors.
-5. The OLED provides a simple local interface for status, mode, or tuning feedback.
+Within this project itself, an earlier software approach attempted TD3-based reinforcement learning for automatic PID tuning across simulated systems, but it did not produce reliable enough results for deployment on the real robot.
 
-This architecture makes the prototype useful as a hardware validation platform for closed-loop control experiments, especially where rapid PID iteration is the main goal.
+## 5. Gap Analysis
 
-## Firmware and Tuning Software
+Existing PID tuning approaches still leave several gaps for student-built real hardware systems:
 
-The current software stack is best described as a hybrid of embedded control firmware on the robot and an external AI-assisted tuning service.
+- Manual tuning is slow and highly dependent on user experience.
+- Classical formulas are often too coarse for unstable or nonlinear platforms like self-balancing robots.
+- Simulation-only results do not always transfer well to real hardware.
+- Reinforcement learning methods can be complex to train and may fail to generalize reliably.
+- Many systems do not provide a simple end-to-end workflow that connects hardware measurements directly to gain recommendations.
 
-### Embedded Firmware Role
+This gap creates a need for a practical platform that combines real hardware experimentation with a smarter iterative tuning process.
 
-On the robot itself, the ESP32-S3 is responsible for the real-time control side of the system:
+## 6. Novelty
 
-- reading motion data from the MPU-6050,
-- running the balancing or motion-control loop,
-- driving the motor driver with updated actuator commands,
-- and presenting status or tuning feedback on the OLED.
+The novelty of E-01 Drive is the combination of:
 
-In other words, the ESP32-S3 executes the live control loop, while the tuning logic determines which PID gains should be used.
+- a real self-balancing robot style hardware platform,
+- a custom PCB for integrating sensing, control, motor drive, and power,
+- and an AI-assisted tuning loop that uses measured hardware response data to guide PID updates.
 
-### PID Tuning Objective
+Rather than treating PID tuning as a one-time manual setup step, the project treats tuning as an iterative data-driven workflow with both offline and online phases. This makes the prototype different from a simple balancing bot or a standard fixed-gain controller demo.
 
-The firmware and surrounding software are designed to automatically determine effective PID gains (`Kp`, `Ki`, `Kd`) for real control systems, reducing manual trial-and-error.
+## 7. Your Project Description
 
-The tuning process is organized into two phases:
+E-01 Drive is a compact embedded hardware platform designed to evaluate and improve PID tuning on a real robotic system. The prototype uses:
 
-1. `Offline tuning`:
-   an initial tuning session that uses exploratory runs and recorded step-response results to find a strong baseline.
-2. `Online tuning`:
-   an adaptive phase that adjusts gains after the system is already running on real hardware.
+- an ESP32-S3 development board as the main controller,
+- an MPU-6050 IMU for motion sensing,
+- a dual motor driver to control the two drive motors,
+- an OLED display for local status output,
+- a DC-DC module and battery-powered supply chain,
+- a custom PCB to organize the electronics,
+- and a two-wheel chassis suitable for balancing and motion-control experiments.
 
-The target system for this workflow is the self-balancing robot form factor shown in this project, where the key feedback variables are tilt angle, angular velocity, and wheel behavior, and the output is motor drive command or PWM.
+The control workflow is built around a self-balancing robot use case. The robot measures tilt and motion, applies PID control through the motors, and records system behavior. An external tuning service can then analyze the response and suggest better gain values. This creates a tighter loop between observation, tuning, testing, and retesting.
 
-### Ideal Tuning Flow
+## 8. List of Components and the Software Used
 
-The firmware description provided for this project outlines the following tuning loop:
+### Hardware Components
 
-1. Run a P-only exploratory response on the real system.
-2. Measure response characteristics such as settling time, overshoot, steady-state error, and stability.
-3. Use those results to identify a matching simulated system or control profile.
-4. Refine candidate PID values based on that matched behavior.
-5. Deploy the suggested gains on hardware.
-6. Feed the measured hardware result back into the system and repeat.
-
-This gives the project a closed tuning loop rather than a one-time static calibration workflow.
-
-### Approach Evolution
-
-The project initially explored a reinforcement learning approach based on TD3 for automatic PID tuning across simulated plants. That route was later abandoned because the training setup did not deliver reliable real-world performance.
-
-The current direction uses a cloud-hosted LLM as the tuning engine. In this design:
-
-- a FastAPI service manages tuning-session state,
-- the model receives step-response metrics from real tests,
-- the model proposes updated PID gains,
-- and the history of tested gains and measured outcomes is stored between iterations.
-
-This means the robot firmware focuses on sensing, actuation, and applying gains, while the heavier tuning logic lives in the external software layer.
-
-### Tuning Service Interface
-
-According to the current firmware brief, the external tuning service exposes these endpoints:
-
-| Endpoint | Purpose |
+| Component | Purpose |
 | --- | --- |
-| `/init_session` | Start a tuning session with the system description |
-| `/answer_questions` | Respond to clarifying questions from the tuning model |
-| `/send_results` | Submit hardware results and receive the next PID set |
-| `/accept` | Accept the current gains as the offline baseline |
-| `/start_adaptive` | Begin the online adaptive tuning phase |
-| `/breach` | Report a disturbance event and receive updated gains |
+| ESP32-S3 board | Main microcontroller and control execution |
+| MPU-6050 IMU | Tilt and motion feedback |
+| Motor driver module | Drives the left and right DC motors |
+| OLED display | Local status and tuning output |
+| DC-DC converter | Voltage regulation |
+| Toggle switch | Power control |
+| 3.7V 1200mAh battery | Portable power source |
+| Two TT gear motors | Actuation |
+| Two wheels | Locomotion and balance support |
+| Custom PCB | Interconnect and integration platform |
+| Mechanical chassis/body | Prototype structure |
 
-### Current Software Status
+### Software and Tools Used
 
-Based on the supplied firmware description, the current software state is:
-
-| Item | Status |
+| Software / Tool | Purpose |
 | --- | --- |
-| TD3 reinforcement learning tuner | Abandoned after insufficient performance |
-| LLM-based offline tuner | Implemented |
-| LLM-based online adaptive tuner | Implemented |
-| Hardware integration with the self-balancing robot | In progress |
-| Browser-based simulation visualizer | Built and tested |
+| KiCad 9 | Schematic and PCB design |
+| Gerber export tools | Manufacturing output generation |
+| FastAPI | Backend service for tuning workflow |
+| Cloud LLM tuner | Gain recommendation and adaptive tuning logic |
+| SvelteKit website repo | Public project presentation and documentation |
+| STEP / STL / GLB exports | 3D model sharing and fabrication references |
 
-Because the repository does not yet include the actual firmware source files or backend implementation, this section documents the current architecture and intended software behavior rather than line-by-line code.
+## 9. Methodology
 
-## PCB and Module Mapping
+The project methodology combines hardware design, embedded control, and AI-assisted tuning:
 
-The custom PCB file confirms these main modules:
+1. Design and fabricate a compact PCB for the controller, IMU, motor driver, and power modules.
+2. Assemble a robot platform with two motors, wheels, battery supply, and control electronics.
+3. Read tilt and motion data from the IMU using the controller.
+4. Run a PID-based control loop on the hardware platform.
+5. Perform exploratory hardware runs to collect response metrics.
+6. Use measured values such as settling time, overshoot, steady-state error, and stability to guide gain updates.
+7. Iterate until the system reaches improved behavior.
 
-| PCB Ref | Module | Role in system | Confidence |
-| --- | --- | --- | --- |
-| `U1` | `glyph-s3` | Main microcontroller board, consistent with the photographed ESP32-S3 dev board | Confirmed from PCB footprint and photo |
-| `U2` | `gmod-motor-driver` | Dual motor control stage for the drive motors | Confirmed from PCB footprint and photo |
-| `U3` | `mpu_6050` | IMU used for motion sensing and feedback | Confirmed from PCB footprint and photo |
-| `U4` | `JST_XH_B2B-XH-A_1x02_P2.50mm_Vertical` | Motor or power connector | Confirmed from PCB footprint |
-| `U5` | `JST_XH_B2B-XH-A_1x02_P2.50mm_Vertical` | Motor or power connector | Confirmed from PCB footprint |
-| `U6` | `gmod-dc-dc` | DC-DC regulator/power-conditioning module | Confirmed from PCB footprint and photo |
+The broader tuning concept is divided into:
 
-The board therefore acts mainly as a clean integration layer between the controller, IMU, power stage, and motor drive hardware.
+- `Offline tuning`: structured initial tuning using exploratory runs and recorded results.
+- `Online tuning`: adaptive updates based on new disturbances or live system behavior.
 
-## Observed Hardware Inventory
+## 10. Work Flow
 
-The following bill of materials is directly visible in the build photos or supported by the PCB layout:
+The current project workflow can be described as:
 
-| Item | Description | Notes |
-| --- | --- | --- |
-| Custom PCB | Main integration board for modules and connectors | Black PCB with footprints for controller, IMU, motor driver, and connectors |
-| ESP32-S3 board | Main processing and control unit | Photo label and PCB footprint indicate an ESP32-S3 module board |
-| MPU-6050 module | Accelerometer and gyroscope sensing | Suitable for balancing and motion feedback |
-| Motor driver module | Drives the two DC motors | Exact model not stated in files, but role is clear |
-| OLED module | Small I2C display | Pins labeled `GND VCC SCL SDA` |
-| DC-DC converter | Battery voltage conditioning | Adjustable module photographed separately |
-| Toggle switch | Main power switch | Used for manual power control |
-| Battery | `3.7V 1200mAh` rechargeable cell | Portable supply for the robot |
-| Two TT gear motors | Left/right drive actuation | Mounted on opposite sides of chassis |
-| Two wheels | Mechanical traction | Paired with the two motors |
-| Central body | Main mechanical frame | Holds display and electronics stack |
+1. Power the robot through the battery, switch, and DC-DC stage.
+2. Read angle and motion feedback from the MPU-6050.
+3. Execute the control loop on the ESP32-S3.
+4. Drive the motors through the motor driver.
+5. Observe system behavior on the hardware platform.
+6. Record response metrics from each trial.
+7. Send the results to the tuning workflow.
+8. Receive improved PID gains.
+9. Re-apply the gains on hardware and repeat.
 
-## Physical Build Notes
+The software architecture currently described for the tuning engine includes:
 
-Based on the photos, the physical prototype is arranged around a central rectangular body with one motor mounted on each side. The OLED is mounted on the front face of the chassis, while the custom PCB and modules are intended to form the internal electronics stack.
+- `/init_session`
+- `/answer_questions`
+- `/send_results`
+- `/accept`
+- `/start_adaptive`
+- `/breach`
 
-This kind of layout is well suited to:
+These endpoints represent the offline and adaptive tuning phases of the project.
 
-- self-balancing robot experiments,
-- drive stabilization tests,
-- motion estimation with IMU feedback,
-- and live tuning demonstrations where users can observe how parameter changes affect behavior.
+## 11. Pic of the Project / Prototype
 
-## Power and Signal Flow
+### Assembled Prototype
 
-The exact net names are not yet documented in a finished schematic, but the most likely flow is:
+![Assembled platform](docs/images/assembled-platform.jpg)
 
-- Battery to toggle switch
-- Toggle switch to DC-DC converter
-- Regulated power distributed to controller, sensor, display, and driver
-- ESP32-S3 to MPU-6050 for motion feedback
-- ESP32-S3 to OLED for status display
-- ESP32-S3 to motor driver for actuator control
-- Motor driver to left and right DC motors through board connectors
-
-If you later add firmware and a completed schematic, this section should be expanded into a pin-by-pin connection table.
-
-## Expected Demo Narrative
-
-For hackathon presentation and judging, the build can be described as:
-
-`A compact edge control platform that simplifies PID tuning on real hardware by combining sensing, actuation, embedded compute, and an immediate physical testbed.`
-
-An effective live demo would show:
-
-1. Powering the system from the onboard battery.
-2. Reading orientation or motion from the MPU-6050.
-3. Running a PID loop on the ESP32-S3.
-4. Sending corrective motor commands through the motor driver.
-5. Displaying status or tuning information on the OLED.
-6. Showing how tuning changes improve stability, responsiveness, or smoothness.
-
-## Files Available in This Folder
-
-The workspace already contains the major hardware artifacts for this prototype:
-
-| Path | Purpose |
-| --- | --- |
-| `E-01 Drive.kicad_pcb` | Main PCB layout and footprint placement |
-| `E-01 Drive.kicad_sch` | Schematic container, currently effectively empty |
-| `03_manufacturing/team5_gerber_x2/` | Gerber and drill outputs for fabrication |
-| `E-01 Drive.step` | Mechanical CAD export |
-| `E-01 Drive.stl` | Printable/mesh geometry export |
-| `E-01 Drive.glb` | 3D model export for sharing or visualization |
-
-## Documentation Gaps
-
-To make this project fully reproducible, the next documentation improvements should be:
-
-1. Add the actual firmware source files and controller implementation details.
-2. Complete the KiCad schematic so wiring is captured formally.
-3. Add a wiring table with controller pins, sensor pins, and motor driver connections.
-4. Add operating voltage details for each module.
-5. Add setup instructions for calibration, cloud tuning setup, PID tuning procedure, and safety limits.
-6. Add measured results such as settling time, overshoot, or stability behavior.
-
-## Photo Gallery
-
-### Custom Carrier PCB
+### Custom PCB
 
 ![Custom PCB](docs/images/custom-pcb.jpg)
 
-### Drive Wheels
-
-![Wheels](docs/images/wheels.jpg)
-
-### Chassis Base With Motors
+### Chassis and Motors
 
 ![Chassis top view](docs/images/chassis-top.jpg)
 
-### OLED Display Module
+## 12. Demo Video
+
+Demo video link: `To be added`
+
+If you already have a Google Drive link, YouTube link, or any public video URL, this section should be updated immediately before final submission.
+
+## 13. Public GitHub Repo Deliverables
+
+Public repository: [BuRN-thE-hArdWaRE/burn-the-hardware.github.io](https://github.com/BuRN-thE-hArdWaRE/burn-the-hardware.github.io)
+
+### Schematics and Circuit Design
+
+- [KiCad schematic](hardware/kicad/E-01%20Drive.kicad_sch)
+- [KiCad project file](hardware/kicad/E-01%20Drive.kicad_pro)
+
+Note: the current schematic file exists in the repository, but it is still largely incomplete and should be finished for a fully reproducible hardware submission.
+
+### PCB Layout (KiCad Project File)
+
+- [PCB layout](hardware/kicad/E-01%20Drive.kicad_pcb)
+- [KiCad project](hardware/kicad/E-01%20Drive.kicad_pro)
+
+### Gerber File
+
+- [Gerber folder](hardware/gerber/team5_gerber_x2/)
+- [Gerber ZIP package](hardware/gerber/team5_gerber_x2/team-5_gerber.zip)
+
+### Source Code
+
+- [Website source](src/)
+- [Firmware and tuning architecture note](firmware/README.md)
+
+Important note: actual firmware source files were not present in the local workspace provided for this update. This repository now includes the firmware architecture description, but the embedded source code should still be added if you want the submission to include the full software implementation.
+
+### 3D Model With Specifications
+
+- [STEP model](hardware/models/E-01%20Drive.step)
+- [STL model](hardware/models/E-01%20Drive.stl)
+- [GLB model](hardware/models/E-01%20Drive.glb)
+
+These files provide the current 3D representation of the mechanical and hardware package available in the workspace.
+
+## Firmware and Tuning Architecture Summary
+
+The current tuning architecture is based on a hybrid control workflow:
+
+- the ESP32-S3 executes the live control loop on the robot,
+- the MPU-6050 provides motion feedback,
+- the motor driver applies actuator output,
+- and an external AI-assisted tuning service recommends PID gains from observed hardware results.
+
+An earlier TD3 reinforcement learning approach was explored and later abandoned due to unreliable performance for real-world deployment. The current approach uses a cloud LLM with a FastAPI-based session workflow for offline and online gain adjustment.
+
+Additional firmware notes are available in [firmware/README.md](firmware/README.md).
+
+## Additional Project Images
+
+### OLED Module
 
 ![OLED module](docs/images/oled-module.jpg)
 
-### MPU-6050 IMU Module
+### IMU Module
 
 ![MPU-6050 front](docs/images/imu-front.jpg)
-
-![MPU-6050 back](docs/images/imu-back.jpg)
-
-### DC-DC Power Module
-
-![DC-DC module](docs/images/dc-dc-module.jpg)
-
-### ESP32-S3 Controller Board
-
-![ESP32-S3 board](docs/images/esp32-s3-board.jpg)
-
-### Power Switch
-
-![Toggle switch](docs/images/toggle-switch.jpg)
-
-### Battery
-
-![Battery](docs/images/battery.jpg)
 
 ### Motor Driver
 
 ![Motor driver](docs/images/motor-driver.jpg)
 
-### Assembled Platform
+### Power Section
 
-![Assembled platform](docs/images/assembled-platform.jpg)
+![DC-DC module](docs/images/dc-dc-module.jpg)
 
-## One-Paragraph Project Summary
+![Battery](docs/images/battery.jpg)
 
-E-01 Drive is a compact embedded hardware platform designed to make PID tuning easier in real-world systems. The prototype integrates an ESP32-S3 controller, MPU-6050 IMU, motor driver, OLED display, power stage, and dual-motor chassis into a portable closed-loop testbed, while a cloud-assisted tuning service proposes and adapts PID gains from measured hardware responses. It is well suited for demonstrating balancing, stabilization, and motion-control concepts while giving users a faster and more intuitive way to experiment with controller tuning on real hardware.
+![Toggle switch](docs/images/toggle-switch.jpg)
+
+### Wheels
+
+![Wheels](docs/images/wheels.jpg)
